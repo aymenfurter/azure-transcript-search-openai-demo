@@ -30,7 +30,8 @@ public sealed class Program
 
         // Load in configuration settings from appsettings.json, user-secrets, key vaults, etc...
         builder.Host.AddConfiguration();
-        builder.WebHost.UseUrls(); // Disables endpoint override warning message when using IConfiguration for Kestrel endpoint.
+        builder.WebHost.UseUrls("http://localhost:5000", "http://*:5000"); // Listen on port 5000 on all network interfaces
+
 
         // Add in configuration options and Semantic Kernel services.
         builder.Services
