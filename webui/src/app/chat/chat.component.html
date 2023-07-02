@@ -1,0 +1,71 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav-content class="content">
+        <div *ngIf="!messages.length" class="welcome-container">
+            <img src="assets/logo.png" class="logo" />
+            <h2>Hey there! 👋</h2>
+            <p>Pleasure to meet you! As your Upskiller Copilot, I am dedicated to guiding you through the vast expanse of Azure-related content. Let's embark on this journey together! 🚀</p>
+            <ul class="sample-queries">
+                <li (click)="startConversation(sampleQuery)" *ngFor="let sampleQuery of sampleQueries">
+                {{ sampleQuery }}
+                </li>
+            </ul>
+      </div>
+      <div class="message-container">
+        <ng-container *ngFor="let message of messages">
+          <div
+            class="message"
+            [ngClass]="{
+              'user-message': message.role === 'user',
+              'assistant-message': message.role === 'assistant'
+            }"
+          >
+            <img *ngIf="message.role === 'assistant'" src="assets/logo.png" class="assistant-logo" />
+            <h4 [ngStyle]="{'white-space': 'pre-wrap'}" [innerHTML]="message.content | linkify"></h4>
+            <div style="display: flex; flex-wrap: wrap;">
+              <iframe
+                  *ngFor="let video of message.videos"
+                  width="280"
+                  height="158"
+                  [src]="video | safe: 'resourceUrl'"
+                  frameborder="0"
+                  allowfullscreen
+                  autoplay
+                  style="margin-right: 10px; margin-bottom: 10px;"
+              ></iframe>
+          </div>
+
+
+          </div>
+        </ng-container>
+      </div>
+    </mat-sidenav-content>
+    <mat-toolbar class="chatbar" color="background">
+            
+        <form (ngSubmit)="submitMessage()" #messageForm="ngForm">
+            <mat-form-field appearance="fill" class="input-form">
+              <input
+                autofocus
+                class="text-box"
+                matInput
+                [(ngModel)]="userMessage"
+                placeholder="Type a message..."
+                name="userMessage"
+                required
+              />
+            </mat-form-field>
+            <button
+              mat-raised-button
+              color="primary"
+              class="send-button"
+              type="submit"
+              [disabled]="isLoading"
+            >
+              <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
+              <span *ngIf="!isLoading">Send</span>
+            </button>
+          </form>
+         <div class="footprint"><span class="footprint-desktop">This is a demo of <a target="_blank" href="https://github.com/aymenfurter/upskiller">Upskiller</a> </span>&nbsp; (using only publicly available data).</div>
+
+    </mat-toolbar>
+  </mat-sidenav-container>
+  
