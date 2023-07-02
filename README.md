@@ -1,2 +1,2 @@
-# azure-upskiller
-A chatbot that can help you with your Azure upskilling!
+# Upskiller
+Dedicated to guiding you through the vast expanse of Azure-related content
