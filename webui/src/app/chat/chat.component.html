@@ -24,13 +24,13 @@
             <div style="display: flex; flex-wrap: wrap;">
               <iframe
                   *ngFor="let video of message.videos"
-                  width="280"
-                  height="158"
+                  width="380"
+                  height="220"
                   [src]="video | safe: 'resourceUrl'"
                   frameborder="0"
                   allowfullscreen
                   autoplay
-                  style="margin-right: 10px; margin-bottom: 10px;"
+                  style="margin-right: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px #0003; border-radius: 13px;"
               ></iframe>
           </div>
 
