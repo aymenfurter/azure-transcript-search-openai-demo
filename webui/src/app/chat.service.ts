@@ -44,7 +44,7 @@ export class ChatService {
 
       messages.push({ role: 'user', content: userMessage });
       const data = await response.json();
-      const videoUrls = data.variables.find((variable: Variable) => variable.key === 'link')?.value.split('\n').filter((url: string) => url) || [];
+      const videoUrls = data.variables.find((variable: Variable) => variable.key === 'link')?.value.split('\n').filter((url: string) => url && !url.includes("QH2-TGUlwu4")) || [];
 
       // Update the return value to match the new response format
       return {
