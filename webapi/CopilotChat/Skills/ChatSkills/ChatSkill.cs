@@ -152,14 +152,7 @@ public class ChatSkill
         {
             return string.Empty;
         }
-
-        var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
-        if (chatContext.ErrorOccurred)
-        {
-            return string.Empty;
-        }
-
-
+        
         // Fill in chat history
         var chatContextComponents = new List<string>() { youTubeMemories };
         var chatContextText = string.Join("\n\n", chatContextComponents.Where(c => !string.IsNullOrEmpty(c)));

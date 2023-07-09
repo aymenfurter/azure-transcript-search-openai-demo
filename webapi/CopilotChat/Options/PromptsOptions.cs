@@ -11,9 +11,9 @@ public class PromptsOptions
 
     [Required, Range(0, int.MaxValue)] public int ResponseTokenLimit { get; set; }
 
-    internal double MemoriesResponseContextWeight { get; } = 0.3;
+    internal double MemoriesResponseContextWeight { get; } = 0.5;
 
-    internal double DocumentContextWeight { get; } = 0.3;
+    internal double DocumentContextWeight { get; } = 0.5;
     // System
     [Required, NotEmptyOrWhitespace] public string KnowledgeCutoffDate { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemDescription { get; set; } = string.Empty;
