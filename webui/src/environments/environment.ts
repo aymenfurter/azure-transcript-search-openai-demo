@@ -1,4 +1,4 @@
 export const environment = {
     sampleQueries: [],
-    targetUrl: 'https://localhost:40443/'
+    targetUrl: 'http://localhost:5000/'
   };

@@ -203,6 +203,9 @@ public class ChatSkill
 
         chatContext.Variables.Set("link", result.Result);
 
+        // Log prompt
+        chatContext.Log.LogInformation("Prompt: {0}", renderedPrompt);
+
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
