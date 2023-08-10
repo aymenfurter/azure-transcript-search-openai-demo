@@ -3,10 +3,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TeamsBot;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -43,14 +47,28 @@ public sealed class Program
             .AddChatOptions(builder.Configuration)
             .AddPlannerServices();
 
-        // Add in the rest of the services.
+        builder.Services
+            .AddHttpClient()
+            .AddControllers()
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.MaxDepth = HttpHelper.BotMessageSerializerSettings.MaxDepth;
+            });
+
+        builder.Services
+            .AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>()
+            .AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>()
+            .AddSingleton<IStorage, MemoryStorage>()
+            .AddSingleton<ConversationState>()
+            .AddTransient<IBot, TeamsBot.Bots.TeamsBot>();
+
         builder.Services
             .AddApplicationInsightsTelemetry()
             .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
-            .AddCors()
-            .AddControllers();
+            .AddCors();
+
 
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
@@ -79,6 +97,8 @@ public sealed class Program
         {
             // We likely failed startup which disposes 'app.Services' - don't attempt to display the health probe URL.
         }
+
+
 
         // Wait for the service to complete.
         await runTask;
