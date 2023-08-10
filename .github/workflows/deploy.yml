@@ -34,7 +34,7 @@ jobs:
           az containerapp create \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --name ${{ env.CHAT_APP_NAME }} \
-            --image ghcr.io/aymenfurter/upskiller/chat:cb668c18b42a3621d6c1902ba694a2ddd183a2a0 \
+            --image ghcr.io/aymenfurter/upskiller/chat:1971cb287db65522a538f2564ba283410a16ad3b \
             --environment ${{ env.ENV_NAME }} \
             --ingress external \
             --secrets acskey="${{ secrets.ACS_KEY }}" \
@@ -49,5 +49,5 @@ jobs:
             --environment ${{ env.ENV_NAME }} \
             --name ${{ env.WEBUI_APP_NAME }} \
             --ingress external \
-            --image ghcr.io/aymenfurter/upskiller/webui:cb668c18b42a3621d6c1902ba694a2ddd183a2a0 \
+            --image ghcr.io/aymenfurter/upskiller/webui:1971cb287db65522a538f2564ba283410a16ad3b \
             --target-port 80
