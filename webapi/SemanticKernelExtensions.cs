@@ -8,12 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Extensions;
 using SemanticKernel.Service.Options;
@@ -39,20 +34,21 @@ internal static class SemanticKernelExtensions
         services.AddScoped<IKernel>(sp =>
         {
 
-            var kernelConfig = new KernelConfig();
+            IKernel kernel;
             var openAIKey = Environment.GetEnvironmentVariable("OPEN_AI_KEY");
 
             if (string.IsNullOrWhiteSpace(openAIKey))
             {
-                kernelConfig.AddAzureChatCompletionService(Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME"), Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT"), Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY"));
-            } else {
-                kernelConfig.AddOpenAIChatCompletionService("gpt-3.5-turbo", openAIKey);
-            }
-
-            IKernel kernel = Kernel.Builder
+                kernel = Kernel.Builder
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithConfiguration(kernelConfig)
+                .WithAzureChatCompletionService(Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")!, Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")!, Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY")!)
                 .Build();
+            } else {
+                kernel = Kernel.Builder
+                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
+                .WithOpenAIChatCompletionService("gpt-3.5-turbo", openAIKey)
+                .Build();
+            }
 
             sp.GetRequiredService<RegisterSkillsWithKernel>()(sp, kernel);
             return kernel;
@@ -71,9 +67,6 @@ internal static class SemanticKernelExtensions
     {
         // Copilot chat skills
         kernel.RegisterSkills(sp);
-
-        // Time skill
-        kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
 
         // Semantic skills
         ServiceOptions options = sp.GetRequiredService<IOptions<ServiceOptions>>().Value;

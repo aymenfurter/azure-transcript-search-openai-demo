@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -31,23 +35,20 @@ namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
 
             var searchEndpoint = $"https://{acsEndpoint}.search.windows.net/";
 
+
             HttpClient client = new HttpClient();
             _azureCognitiveSearchMemory = new AzureSearchMemoryClient(searchEndpoint, acsApiKey, client);
         }
 
-        [SKFunction("Query youtube video transcription in the memory given a user message")]
-        [SKFunctionName("QueryYouTubeTranscriptions")]
-        [SKFunctionInput(Description = "Query to match.")]
-        [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-        public async Task<string> QueryYouTubeVideosAsync(string query, SKContext context)
+        [SKFunction, Description("Query youtube video transcription in the memory given a user message")]
+        [SKParameter("tokenLimit", "Maximum number of tokens")]
+        public async Task<string> QueryYouTubeVideosAsync([Description("Query to match.")] string query, SKContext context, IKernel kernel)
         {
             int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
             var remainingToken = tokenLimit;
 
             var videoCollections = new[] { _youTubeImportOptions.GlobalDocumentCollectionName };
-
             var relevantMemories = await GetRelevantMemories(query, videoCollections);
-
             var videosText = BuildDocumentText(ref remainingToken, relevantMemories);
 
             return string.IsNullOrEmpty(videosText)

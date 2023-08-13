@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using CopilotChat.Skills.YouTube;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Options;
+using System.Text.RegularExpressions;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
@@ -20,7 +21,6 @@ public class ChatSkill
     private readonly IKernel _kernel;
     private readonly PromptsOptions _promptOptions;
     private readonly YouTubeMemorySkill _youTubeMemorySkill;
-    private readonly YouTubePlugin _youtubePlugin;
     private readonly IKernel _plannerKernel;
 
 
@@ -40,9 +40,9 @@ public class ChatSkill
     }
 
 
-    [SKFunction("Extract user intent")]
-    [SKFunctionName("ExtractUserIntent")]
-    [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
+    [SKFunction, Description("Extract user intent")]
+    [SKParameter("chatId", "Chat ID to extract history from")]
+    [SKParameter("audience", "The audience the chat bot is interacting with.")]
     public async Task<string> ExtractUserIntentAsync(SKContext context)
     {
         var tokenLimit = this._promptOptions.CompletionTokenLimit;
@@ -57,7 +57,7 @@ public class ChatSkill
                 })
             );
 
-        var intentExtractionContext = Utilities.CopyContextWithVariablesClone(context);
+        var intentExtractionContext = context.Clone(); 
         intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
 
         var completionFunction = this._kernel.CreateSemanticFunction(
@@ -79,15 +79,12 @@ public class ChatSkill
 
         return $"User intent: {result}";
     }
-
-    [SKFunction("Extract chat history")]
-    [SKFunctionName("ExtractChatHistory")]
-    [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    public async Task<string> ExtractChatHistoryAsync(SKContext context)
+    
+    [SKFunction, Description("Extract chat history")]
+    public async Task<string> ExtractChatHistoryAsync(
+        [Description("Chat history")] string history,
+        [Description("Maximum number of tokens")] int tokenLimit)
     {
-        var history = context.Variables["History"].ToString();
-        var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-
         if (history.Length > tokenLimit)
         {
             history = history.Substring(history.Length - tokenLimit);
@@ -97,16 +94,14 @@ public class ChatSkill
     }
 
 
-  
-    [SKFunction("Get chat response")]
-    [SKFunctionName("Chat")]
-    [SKFunctionInput(Description = "The new message")]
-    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user")]
-    [SKFunctionContextParameter(Name = "userName", Description = "Name of the user")]
-    [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
-    public async Task<SKContext> ChatAsync(string message, SKContext context)
+     [SKFunction, Description("Get chat response")]
+    public async Task<SKContext> ChatAsync(
+        [Description("The new message")] string message,
+        [Description("Previously proposed plan that is approved"), DefaultValue(null), SKName("proposedPlan")] string? planJson,
+        [Description("ID of the response message for planner"), DefaultValue(null), SKName("responseMessageId")] string? messageId,
+        SKContext context)
     {
-        var chatContext = Utilities.CopyContextWithVariablesClone(context);
+        var chatContext = context.Clone();
         chatContext.Variables.Set("History", chatContext["History"] + "\n" + message);
 
 
@@ -145,14 +140,14 @@ public class ChatSkill
         }
 
         var remainingToken = this.GetChatContextTokenLimit(userIntent);
-        
+
         var youTubeTransscriptContextTokenLimit = (int)(remainingToken * this._promptOptions.DocumentContextWeight);
-        var youTubeMemories = await this.QueryTransscriptsAsync(chatContext, userIntent, youTubeTransscriptContextTokenLimit);
+        var youTubeMemories = await this.QueryTransscriptsAsync(chatContext, userIntent, youTubeTransscriptContextTokenLimit, _kernel);
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
         }
-        
+
         // Fill in chat history
         var chatContextComponents = new List<string>() { youTubeMemories };
         var chatContextText = string.Join("\n\n", chatContextComponents.Where(c => !string.IsNullOrEmpty(c)));
@@ -168,7 +163,6 @@ public class ChatSkill
         }
 
 
-        // Invoke the model
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
 
@@ -188,15 +182,10 @@ public class ChatSkill
             settings: this.CreateChatResponseCompletionSettings()
         );
         
-        // Use planner to get list of YouTube links 
-        var actionPlanner = new SequentialPlanner(this._plannerKernel);
-        var ask = "Given the following statement by a chatbot, use youtube skill to generate most relevant youtube links:" + chatContext.Result;
-        var plan = await actionPlanner.CreatePlanAsync(ask);
-        var result = await plan.InvokeAsync();
-
-        chatContext.Variables.Set("link", result.Result);
-
-        // Log prompt
+        List<string> youtubeLinks = extractLinks(chatContext.Result, chatContextText);
+        var result = replaceLinks(chatContext.Result, youtubeLinks);
+        chatContext.Variables.Set("link", string.Join("\n", youtubeLinks));
+        
         chatContext.Log.LogInformation("Prompt: {0}", renderedPrompt);
 
         if (chatContext.ErrorOccurred)
@@ -204,7 +193,53 @@ public class ChatSkill
             return string.Empty;
         }
 
-        return chatContext.Result;
+
+        return result;
+    }
+
+ 
+    private static string replaceLinks(string result, List<string> youtubeLinks) {
+        if (result.Contains("https://")) return result;
+        string updatedResult = result;
+        foreach (string youtubeLink in youtubeLinks)
+        {
+            Match match = Regex.Match(youtubeLink, @"https://www\.youtube\.com/embed/(?<youtubeid>[^?]+)");
+            if (!match.Success) continue; 
+            string youtubeId = match.Groups["youtubeid"].Value;
+            string pattern = $@"(?<!=""|')(?<!<a href[^>]*?){Regex.Escape(youtubeId)}(?!=""|')(?!.*?</a>)";
+            string replacement = $@"<a target=""_blank"" href=""{youtubeLink.Replace("/embed/", "/v/")}"">{youtubeId}</a>";
+
+            updatedResult = Regex.Replace(updatedResult, pattern, replacement);
+        }
+        return updatedResult;
+    }
+
+    private static List<string> extractLinks(string result, string chatContextText)
+    {
+        var lines = chatContextText.Split("\n");
+        var youtubeLinks = new List<string>();
+        string pattern = @"YouTube ID: (\w+)-(\d{2}_\d{2}_\d{2})";
+        foreach (var line in lines)
+        {
+            if (line.Contains("Transcript from YouTube ID:"))
+            {
+                Match match = Regex.Match(line, pattern);
+                if (match.Success)
+                {
+                    string youtubeid = match.Groups[1].Value;
+                    string timecode = match.Groups[2].Value;
+                    var timeParts = timecode.Split('_').Select(int.Parse).ToArray();
+                    int totalSeconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+                    var link = $"https://www.youtube.com/embed/{youtubeid}?start={totalSeconds}";
+
+                    if (result.Contains(youtubeid)) {
+                        youtubeLinks.Add(link);
+                    }
+                }
+            }
+        }
+
+        return youtubeLinks;
     }
 
     private async Task<string> GetUserIntentAsync(SKContext context)
@@ -212,15 +247,9 @@ public class ChatSkill
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
-            contextVariables.Set("History", context["History"]);
 
-            var intentContext = new SKContext(
-                contextVariables,
-                context.Memory,
-                context.Skills,
-                context.Log,
-                context.CancellationToken
-            );
+            SKContext intentContext = context.Clone();
+            intentContext.Variables.Set("History", context["History"]);
 
             userIntent = await this.ExtractUserIntentAsync(intentContext);
             // Propagate the error
@@ -239,47 +268,18 @@ public class ChatSkill
 
     private Task<string> GetChatHistoryAsync(SKContext context, int tokenLimit)
     {
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        contextVariables.Set("History", context.Variables["History"]);
-
-        var chatHistoryContext = new SKContext(
-            contextVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
-
-        var chatHistory = this.ExtractChatHistoryAsync(chatHistoryContext);
-
-        // Propagate the error
-        if (chatHistoryContext.ErrorOccurred)
-        {
-            context.Fail(chatHistoryContext.LastErrorDescription);
-        }
-
-        return chatHistory;
+        return this.ExtractChatHistoryAsync(context["History"], tokenLimit);
     }
 
 
 
-    private Task<string> QueryTransscriptsAsync(SKContext context, string userIntent, int tokenLimit)
+    private Task<string> QueryTransscriptsAsync(SKContext context, string userIntent, int tokenLimit, IKernel kernel)
     {
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+        var youTubeMemoriesContext = context.Clone();
+        youTubeMemoriesContext.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));        
 
-        var youTubeMemoriesContext = new SKContext(
-            contextVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var youtubeMemories = this._youTubeMemorySkill.QueryYouTubeVideosAsync(userIntent, youTubeMemoriesContext, kernel);
 
-        var youtubeMemories = this._youTubeMemorySkill.QueryYouTubeVideosAsync(userIntent, youTubeMemoriesContext);
-
-        // Propagate the error
         if (youTubeMemoriesContext.ErrorOccurred)
         {
             context.Fail(youTubeMemoriesContext.LastErrorDescription);

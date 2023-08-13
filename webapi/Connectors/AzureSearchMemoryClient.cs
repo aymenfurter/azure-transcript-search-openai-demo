@@ -59,7 +59,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector
             var client = GetSearchClient(collection);
 
             var queryEmbeddings = await GenerateEmbeddings(query, _openAIClient);
-            var vector = new SearchQueryVector { K = 5, Fields = "Vector", Value = queryEmbeddings.ToArray() };
+            var vector = new SearchQueryVector { KNearestNeighborsCount = 5, Fields = "Vector", Value = queryEmbeddings.ToArray() };
 
             var options = new SearchOptions
             {
