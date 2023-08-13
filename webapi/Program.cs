@@ -45,6 +45,7 @@ public sealed class Program
         // Add CopilotChat services.
         builder.Services
             .AddChatOptions(builder.Configuration)
+            .AddTransient<ChatService>()
             .AddPlannerServices();
 
         builder.Services

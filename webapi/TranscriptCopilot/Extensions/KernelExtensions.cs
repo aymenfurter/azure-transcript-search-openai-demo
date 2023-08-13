@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+using Microsoft.SemanticKernel.Skills.Core;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 using SemanticKernel.Service.Options;
@@ -34,6 +36,7 @@ public static class KernelExtensions
                 logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
             nameof(ChatSkill));
 
+        kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
         return kernel;
     }
 
