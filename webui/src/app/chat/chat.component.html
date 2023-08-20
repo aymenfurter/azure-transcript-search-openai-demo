@@ -3,7 +3,7 @@
         <div *ngIf="!messages.length" class="welcome-container">
             <img src="assets/logo.png" class="logo" />
             <h2>Hey there! 👋</h2>
-            <p>Pleasure to meet you! As your Upskiller Copilot, I am dedicated to guiding you through the vast expanse of Azure-related content. Let's embark on this journey together! 🚀</p>
+            <p>Welcome! As your Search Assistant, I'm here to help you navigate through the extensive collection of video transcripts at your disposal. Let's explore the information together and find exactly what you're looking for! 🚀</p>
             <ul class="sample-queries">
                 <li (click)="startConversation(sampleQuery)" *ngFor="let sampleQuery of sampleQueries">
                 {{ sampleQuery }}
@@ -64,7 +64,7 @@
               <span *ngIf="!isLoading">Send</span>
             </button>
           </form>
-         <div class="footprint"><span class="footprint-desktop">This is a demo of <a target="_blank" href="https://github.com/aymenfurter/upskiller">Upskiller</a> </span>&nbsp; (using only publicly available data).</div>
+         <div class="footprint"><span class="footprint-desktop">This is a demo of <a target="_blank" href="https://github.com/aymenfurter/azure-transcript-search-openai-demo">azure-transcript-search-openai-demo</a> </span>&nbsp; (using only publicly available data).</div>
 
     </mat-toolbar>
   </mat-sidenav-container>

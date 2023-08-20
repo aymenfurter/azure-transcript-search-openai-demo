@@ -30,15 +30,10 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector
             string apiKey,
             HttpClient? httpClient = null)
         {
-            _openAIClient = new OpenAIClient(Environment.GetEnvironmentVariable("OPEN_AI_KEY") ?? string.Empty);
-
-            if (_openAIClient == null)
-            {
-                AzureKeyCredential cred = new(Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY") ?? string.Empty);
-                var target = Environment.GetEnvironmentVariable("AZURE_OPENAI_API_ENDPOINT") ?? string.Empty;
-                _openAIClient = new OpenAIClient(new Uri(target), cred);
-            }
-
+            AzureKeyCredential cred = new(Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY") ?? string.Empty);
+            var target = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? string.Empty;
+            _openAIClient = new OpenAIClient(new Uri(target), cred);
+            
             var options = new SearchClientOptions();
 
             if (httpClient != null)

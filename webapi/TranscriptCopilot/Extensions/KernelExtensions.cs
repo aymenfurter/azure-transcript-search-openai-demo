@@ -43,14 +43,7 @@ public static class KernelExtensions
 
     private static KernelBuilder WithPlannerBackend(this KernelBuilder kernelBuilder)
     {
-        var openAIKey = Environment.GetEnvironmentVariable("OPEN_AI_KEY");
-        if (string.IsNullOrWhiteSpace(openAIKey))
-        {
-            kernelBuilder.WithAzureChatCompletionService(Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME"), Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT"), Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY"));
-        } else {
-            kernelBuilder.WithOpenAIChatCompletionService("gpt-3.5-turbo", openAIKey);
-        }
-
+        kernelBuilder.WithAzureChatCompletionService(Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME"), Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT"), Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY"));
         return kernelBuilder;
     }
 }

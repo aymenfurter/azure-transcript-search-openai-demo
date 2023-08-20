@@ -35,20 +35,10 @@ internal static class SemanticKernelExtensions
         {
 
             IKernel kernel;
-            var openAIKey = Environment.GetEnvironmentVariable("OPEN_AI_KEY");
-
-            if (string.IsNullOrWhiteSpace(openAIKey))
-            {
-                kernel = Kernel.Builder
-                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithAzureChatCompletionService(Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")!, Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")!, Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY")!)
-                .Build();
-            } else {
-                kernel = Kernel.Builder
-                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithOpenAIChatCompletionService("gpt-3.5-turbo", openAIKey)
-                .Build();
-            }
+            kernel = Kernel.Builder
+            .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
+            .WithAzureChatCompletionService(Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")!, Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")!, Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY")!)
+            .Build();
 
             sp.GetRequiredService<RegisterSkillsWithKernel>()(sp, kernel);
             return kernel;

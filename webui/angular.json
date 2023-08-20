@@ -22,6 +22,7 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
+              "src/entrypoint.sh",
               "src/assets"
             ],
             "styles": [
