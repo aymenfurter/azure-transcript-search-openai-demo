@@ -1,4 +1,4 @@
-# Turn a YouTube Channel Into a Chatbot
+# Turn any YouTube Channel Into a Chatbot
 <img style="border-radius: 10px;" src="architecture.png?raw=true">
 
 This example demonstrates how to create a ChatGPT-style application using the Retrieval Augmented Generation (RAG). It leverages Azure's OpenAI Service to access the ChatGPT model (gpt-3.5-turbo) and employs Azure Cognitive Search Vector Search for data indexing and retrieval.
