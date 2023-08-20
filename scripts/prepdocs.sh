@@ -29,7 +29,7 @@ chmod a+rx bin/youtube-dl
 echo "Checking youtube-dl version..."
 bin/youtube-dl --version
 echo "Fetching playlist data..."
-bin/youtube-dl --verbose --skip-download --print-json --playlist-end 10 "https://www.youtube.com/@$YOUTUBE_CHANNEL_NAME/videos" > /tmp/videos.json
+bin/youtube-dl --verbose --skip-download --print-json --playlist-end 20 "https://www.youtube.com/@$YOUTUBE_CHANNEL_NAME/videos" > /tmp/videos.json
 echo "Extracting video ids..."
 cat /tmp/videos.json | jq --join-output '.id,"\n"' > /tmp/videos.txt
 echo "Creating index files..."

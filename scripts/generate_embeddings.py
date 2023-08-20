@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import time
 import webvtt
 from collections import defaultdict
 from azure.identity import AzureDeveloperCliCredential
@@ -82,6 +83,7 @@ def create_embeddings(video_id):
         transcript += data + "\n"
 
     for line in transcript.splitlines():
+        time.sleep(1)
         timecode = line[:8]
         text = line[9:]
         content = f"YouTube-ID: {video_id} \nTimecode: {timecode} \nText: {text}"

@@ -22,11 +22,11 @@ var chatGptDeploymentName = 'gpt-35-turbo'
 var chatGptModelName = 'gpt-35-turbo'
 var chatGptDeploymentCapacity = 100
 var embeddingDeploymentName = 'text-embedding-ada-002'
-var embeddingDeploymentCapacity = 60
+var embeddingDeploymentCapacity = 100
 param embeddingModelName string = 'text-embedding-ada-002'
 param openAiResourceGroupName string = ''
 @description('Location for the OpenAI resource group')
-@allowed(['eastus', 'francecentral', 'southcentralus', 'uksouth', 'westeurope'])
+@allowed(['eastus', 'southcentralus', 'uksouth', 'westeurope'])
 @metadata({
   azd: {
     type: 'location'
