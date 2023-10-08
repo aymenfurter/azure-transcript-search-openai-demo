@@ -49,7 +49,7 @@ namespace SemanticKernel.Service.CopilotChat.Skills.SortSkill
             {
                 return sortType;
             }
-            throw new InvalidOperationException($"Invalid sort type: {sortString}");
+            return SortType.NONE;
         }
     }
 }

@@ -31,14 +31,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector
             string apiKey,
             HttpClient? httpClient = null)
         {
-            _openAIClient = new OpenAIClient(Environment.GetEnvironmentVariable("OPEN_AI_KEY") ?? string.Empty);
-
-            if (_openAIClient == null)
-            {
-                AzureKeyCredential cred = new(Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY") ?? string.Empty);
-                var target = Environment.GetEnvironmentVariable("AZURE_OPENAI_API_ENDPOINT") ?? string.Empty;
-                _openAIClient = new OpenAIClient(new Uri(target), cred);
-            }
+            AzureKeyCredential cred = new(Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY") ?? string.Empty);
+            var target = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? string.Empty;
+            _openAIClient = new OpenAIClient(new Uri(target), cred);
 
             var options = new SearchClientOptions();
 
@@ -68,30 +63,23 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector
                 Select = { "Text", "Description", "ExternalSourceName", "Id" }
             };
 
-
-            // print out sortType
-            Console.WriteLine($"sortType: {sortType}");
-
             switch (sortType)
             {
                 case SortType.MONTH:
                     DateTime fourWeeksAgo = DateTime.UtcNow.AddDays(-28);
                     options.Filter = $"CreatedAt ge {fourWeeksAgo:o}";
-                    options.Size = 150;
-                    //options.OrderBy.Add("CreatedAt desc");
+                    options.Size = 25;
                     break;
                 
                 case SortType.RECENT:
                     DateTime recent = DateTime.UtcNow.AddDays(-28*3);
                     options.Filter = $"CreatedAt ge {recent:o}";
-                    options.Size = 150;
-                    //options.OrderBy.Add("CreatedAt desc");
+                    options.Size = 25;
                     break;
 
                 case SortType.YEAR:
                     DateTime oneYearAgo = DateTime.UtcNow.AddDays(-365);
                     options.Filter = $"CreatedAt ge {oneYearAgo:o}";
-                    //options.OrderBy.Add("CreatedAt desc");
                     break;
 
                 case SortType.NONE:

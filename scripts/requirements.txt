@@ -8,3 +8,4 @@ openai[datalib]
 openai
 aiohttp
 webvtt-py
+pytube

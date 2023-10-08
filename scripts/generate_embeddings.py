@@ -12,6 +12,7 @@ from azure.search.documents.indexes.models import *
 from azure.search.documents import SearchClient
 from azure.ai.formrecognizer import DocumentAnalysisClient
 import openai
+from pytube import YouTube
 
 
 def initialize_search_index(acs_key, acs_instance):
@@ -29,6 +30,9 @@ def initialize_search_index(acs_key, acs_instance):
                 SearchableField(name="Description", type="Edm.String", analyzer_name="en.microsoft"),
                 SearchableField(name="AdditionalMetadata", type="Edm.String", analyzer_name="en.microsoft"),
                 SearchableField(name="ExternalSourceName", type="Edm.String", analyzer_name="en.microsoft"),
+                SimpleField(name="CreatedAt", type=SearchFieldDataType.DateTimeOffset, filterable=True, sortable=True),
+                SearchableField(name="ChannelName", type="Edm.String", analyzer_name="en.microsoft"),
+                SearchableField(name="VideoName", type="Edm.String", analyzer_name="en.microsoft"),
                 SearchField(name="Vector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single), 
                             hidden=False, searchable=True, filterable=False, sortable=False, facetable=False,
                             dimensions=1536, vector_search_configuration="default"), 
@@ -55,6 +59,16 @@ def initialize_search_index(acs_key, acs_instance):
 
 
 def create_embeddings(video_id):
+
+    url = f'https://www.youtube.com/watch?v={video_id}'
+    yt = YouTube(url)
+
+    video_name = yt.title
+    channel_name = yt.author
+    publish_date = yt.publish_date
+
+
+
     file = 'data/' + video_id+'.en.vtt'
     captions = webvtt.read(file)
 
@@ -83,15 +97,17 @@ def create_embeddings(video_id):
         transcript += data + "\n"
 
     for line in transcript.splitlines():
-        time.sleep(1)
         timecode = line[:8]
         text = line[9:]
-        content = f"YouTube-ID: {video_id} \nTimecode: {timecode} \nText: {text}"
+        content = f"Video Name: {video_name}+\nYouTube Channel: {channel_name}\nPublish Date: {publish_date}\nYouTube-ID: {video_id} \nTimecode: {timecode} \nText: {text}"
         yield {
             "Id": re.sub("[^0-9a-zA-Z_-]","_",f"{video_id}-{timecode}"),
             "Text": content,
+            "CreatedAt": publish_date,
+            "ChannelName": channel_name,
+            "VideoName": video_name,
             "Vector": openai.Embedding.create(engine="text-embedding-ada-002", input=text)["data"][0]["embedding"],
-        }
+         }
 
 
 def index(embedding_data, acs_key, acs_instance, batch_size=1000):
