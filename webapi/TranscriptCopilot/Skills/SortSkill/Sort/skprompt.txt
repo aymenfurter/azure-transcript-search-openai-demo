@@ -1,0 +1,11 @@
+Analyze the following query and return with one of the following options:
+
+NONE = User is not interested in a specific timespan or recency.
+RECENT = User is interested in recent information
+MONTH = User is interested in information from the past month.
+YEAR = User is interested in information from the past year.
+
+Current Date: {{$date}}
+Event: {{$query}}
+
+Output: 

@@ -19,6 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector
         public string? AdditionalMetadata { get; set; } = string.Empty;
 
         [SimpleField(IsFilterable = false)]
+        public DateTime? CreatedAt { get; set; }
+
+        [SimpleField(IsFilterable = false)]
         public string ExternalSourceName { get; set; } = string.Empty;
 
         [SimpleField(IsFilterable = false)]

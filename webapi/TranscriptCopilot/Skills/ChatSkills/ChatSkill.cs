@@ -13,6 +13,10 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Options;
 using System.Text.RegularExpressions;
+using System.IO;
+using System;
+using Microsoft.ApplicationInsights.AspNetCore.TelemetryInitializers;
+using SemanticKernel.Service.CopilotChat.Skills.SortSkill;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
@@ -141,8 +145,11 @@ public class ChatSkill
 
         var remainingToken = this.GetChatContextTokenLimit(userIntent);
 
+        var sortHandler = new SortHandler(this._kernel);
+        var sortType = await sortHandler.ProcessUserIntent(userIntent);
+
         var youTubeTransscriptContextTokenLimit = (int)(remainingToken * this._promptOptions.DocumentContextWeight);
-        var youTubeMemories = await this.QueryTransscriptsAsync(chatContext, userIntent, youTubeTransscriptContextTokenLimit, _kernel);
+        var youTubeMemories = await this.QueryTransscriptsAsync(chatContext, userIntent, youTubeTransscriptContextTokenLimit, _kernel, sortType);
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
@@ -273,12 +280,12 @@ public class ChatSkill
 
 
 
-    private Task<string> QueryTransscriptsAsync(SKContext context, string userIntent, int tokenLimit, IKernel kernel)
+    private Task<string> QueryTransscriptsAsync(SKContext context, string userIntent, int tokenLimit, IKernel kernel, SortSkill.SortType sortType)
     {
         var youTubeMemoriesContext = context.Clone();
         youTubeMemoriesContext.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));        
 
-        var youtubeMemories = this._youTubeMemorySkill.QueryYouTubeVideosAsync(userIntent, youTubeMemoriesContext, kernel);
+        var youtubeMemories = this._youTubeMemorySkill.QueryYouTubeVideosAsync(userIntent, youTubeMemoriesContext, kernel, sortType);
 
         if (youTubeMemoriesContext.ErrorOccurred)
         {

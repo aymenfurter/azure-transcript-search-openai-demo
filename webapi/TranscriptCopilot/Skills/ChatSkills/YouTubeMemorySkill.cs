@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.CopilotChat.Options;
+using SemanticKernel.Service.CopilotChat.Skills.SortSkill;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
 {
@@ -42,13 +43,13 @@ namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
 
         [SKFunction, Description("Query youtube video transcription in the memory given a user message")]
         [SKParameter("tokenLimit", "Maximum number of tokens")]
-        public async Task<string> QueryYouTubeVideosAsync([Description("Query to match.")] string query, SKContext context, IKernel kernel)
+        public async Task<string> QueryYouTubeVideosAsync([Description("Query to match.")] string query, SKContext context, IKernel kernel, SortSkill.SortType sortType)
         {
             int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
             var remainingToken = tokenLimit;
 
             var videoCollections = new[] { _youTubeImportOptions.GlobalDocumentCollectionName };
-            var relevantMemories = await GetRelevantMemories(query, videoCollections);
+            var relevantMemories = await GetRelevantMemories(query, videoCollections, sortType);
             var videosText = BuildDocumentText(ref remainingToken, relevantMemories);
 
             return string.IsNullOrEmpty(videosText)
@@ -56,7 +57,7 @@ namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
                 : $"Here are relevant YouTube snippets and IDs:\n{videosText}";
         }
 
-        private async Task<List<MemoryQueryResult>> GetRelevantMemories(string query, string[] documentCollections)
+        private async Task<List<MemoryQueryResult>> GetRelevantMemories(string query, string[] documentCollections, SortSkill.SortType sortType)
         {
             var relevantMemories = new List<MemoryQueryResult>();
 
@@ -64,7 +65,9 @@ namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
             {
                 var results = _azureCognitiveSearchMemory.SearchAsync(
                     documentCollection,
-                    query);
+                    query,
+                    sortType
+                    );
 
                 await foreach (var memory in results)
                 {
