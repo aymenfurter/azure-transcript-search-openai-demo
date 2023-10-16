@@ -68,7 +68,15 @@ public sealed class Program
             .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
-            .AddCors();
+            .AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
 
 
         // Configure middleware and endpoints
