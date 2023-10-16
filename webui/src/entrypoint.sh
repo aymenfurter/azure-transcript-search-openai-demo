@@ -30,7 +30,7 @@ generateEnvironmentTs() {
                 value=${line#*=}
 
                 if [ "$key" = "UI_APP_API_BASE_URL" ]; then
-                    sed -i "s|http://localhost:5000/chat|$value/chat|g" "$file"
+                    sed -i "s|http://localhost:8080/chat|$value/chat|g" "$file"
                 fi
             fi
         done
