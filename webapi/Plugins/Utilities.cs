@@ -1,9 +1,9 @@
 ﻿//Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.Service.CopilotChat.Skills;
+namespace AzureVideoChat.Plugins;
 
 /// <summary>
 /// Utility methods for skills.

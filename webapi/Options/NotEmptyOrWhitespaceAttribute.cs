@@ -3,11 +3,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SemanticKernel.Service.Options;
+namespace AzureVideoChat.Options;
 
-/// <summary>
-/// If the string is set, it must not be empty or whitespace.
-/// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 internal sealed class NotEmptyOrWhitespaceAttribute : ValidationAttribute
 {

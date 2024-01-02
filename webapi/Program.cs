@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using TeamsBot;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -14,20 +13,14 @@ using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SemanticKernel.Service.CopilotChat.Extensions;
+using AzureVideoChat.Extensions;
+using AzureVideoChat.Services;
+using AzureVideoChat.Bots;
 
 namespace SemanticKernel.Service;
 
-/// <summary>
-/// Copilot Chat Service
-/// </summary>
 public sealed class Program
 {
-    /// <summary>
-    /// Entry point
-    /// </summary>
-    /// <param name="args">Web application command-line arguments.</param>
-    // ReSharper disable once InconsistentNaming
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -45,8 +38,7 @@ public sealed class Program
         // Add CopilotChat services.
         builder.Services
             .AddChatOptions(builder.Configuration)
-            .AddTransient<ChatService>()
-            .AddPlannerServices();
+            .AddTransient<ChatService>();
 
         builder.Services
             .AddHttpClient()
@@ -60,8 +52,7 @@ public sealed class Program
             .AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>()
             .AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>()
             .AddSingleton<IStorage, MemoryStorage>()
-            .AddSingleton<ConversationState>()
-            .AddTransient<IBot, TeamsBot.Bots.TeamsBot>();
+            .AddSingleton<ConversationState>();
 
         builder.Services
             .AddApplicationInsightsTelemetry()

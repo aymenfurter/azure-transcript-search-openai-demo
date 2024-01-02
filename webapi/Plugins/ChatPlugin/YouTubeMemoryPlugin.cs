@@ -4,27 +4,23 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
+using AzureVideoChat.Connectors.Memory.AzureCognitiveSearchVector;
+using AzureVideoChat.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.CopilotChat.Options;
-using SemanticKernel.Service.CopilotChat.Skills.SortSkill;
 
-namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
+namespace AzureVideoChat.Plugins.ChatPlugins
 {
-    public class YouTubeMemorySkill
+    public class YouTubeMemoryPlugin
     {
         private readonly PromptsOptions _promptOptions;
         private readonly YouTubeMemoryOptions _youTubeImportOptions;
-        private readonly AzureSearchMemoryClient _azureCognitiveSearchMemory;
+        private readonly AISearchMemoryClient _aiSearchMemory;
 
-        public YouTubeMemorySkill(
+        public YouTubeMemoryPlugin(
             IOptions<PromptsOptions> promptOptions,
             IOptions<YouTubeMemoryOptions> youTubeImportOptions)
         {
@@ -38,12 +34,11 @@ namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
 
 
             HttpClient client = new HttpClient();
-            _azureCognitiveSearchMemory = new AzureSearchMemoryClient(searchEndpoint, acsApiKey, client);
+            _aiSearchMemory = new AISearchMemoryClient(searchEndpoint, acsApiKey, client);
         }
 
         [SKFunction, Description("Query youtube video transcription in the memory given a user message")]
-        [SKParameter("tokenLimit", "Maximum number of tokens")]
-        public async Task<string> QueryYouTubeVideosAsync([Description("Query to match.")] string query, SKContext context, IKernel kernel, SortSkill.SortType sortType)
+        public async Task<string> QueryYouTubeVideosAsync([Description("Query to match.")] string query, SKContext context, SortPlugin.SortType sortType)
         {
             int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
             var remainingToken = tokenLimit;
@@ -57,13 +52,13 @@ namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills
                 : $"Here are relevant YouTube snippets and IDs:\n{videosText}";
         }
 
-        private async Task<List<MemoryQueryResult>> GetRelevantMemories(string query, string[] documentCollections, SortSkill.SortType sortType)
+        private async Task<List<MemoryQueryResult>> GetRelevantMemories(string query, string[] documentCollections, SortPlugin.SortType sortType)
         {
             var relevantMemories = new List<MemoryQueryResult>();
 
             foreach (var documentCollection in documentCollections)
             {
-                var results = _azureCognitiveSearchMemory.SearchAsync(
+                var results = _aiSearchMemory.SearchAsync(
                     documentCollection,
                     query,
                     sortType

@@ -10,9 +10,6 @@ namespace SemanticKernel.Service;
 
 internal static class ConfigExtensions
 {
-    /// <summary>
-    /// Build the configuration for the service.
-    /// </summary>
     public static IHostBuilder AddConfiguration(this IHostBuilder host)
     {
         string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -36,15 +33,12 @@ internal static class ConfigExtensions
                 optional: true,
                 reloadOnChange: true);
 
-            // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-8.0
             string? keyVaultUri = builderContext.Configuration["KeyVaultUri"];
             if (!string.IsNullOrWhiteSpace(keyVaultUri))
             {
                 configBuilder.AddAzureKeyVault(
                     new Uri(keyVaultUri),
                     new DefaultAzureCredential());
-
-                // for more information on how to use DefaultAzureCredential, see https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
             }
         });
 

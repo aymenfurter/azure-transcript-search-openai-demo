@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using SemanticKernel.Service.Options;
 
-namespace SemanticKernel.Service.CopilotChat.Options;
+namespace AzureVideoChat.Options;
 
 public class PromptsOptions
 {
@@ -23,7 +22,7 @@ public class PromptsOptions
     {
         this.SystemDescription,
         this.SystemIntent,
-        "{{ChatSkill.ExtractChatHistory}}",
+        "{{ChatPlugin.ExtractChatHistory}}",
         this.SystemIntentContinuation
     };
 
@@ -32,7 +31,7 @@ public class PromptsOptions
     [Required, NotEmptyOrWhitespace] public string SystemIntent { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemIntentContinuation { get; set; } = string.Empty;
 
-    internal string SystemChatContinuation = "SINGLE RESPONSE FROM BOT TO USER:\n[{{TimeSkill.Now}} {{timeSkill.Second}}] bot:";
+    internal string SystemChatContinuation = "SINGLE RESPONSE FROM BOT TO USER:\n[{{TimePlugin.Now}} {{timePlugin.Second}}] bot:";
 
     internal string[] SystemChatPromptComponents => new string[]
     {
