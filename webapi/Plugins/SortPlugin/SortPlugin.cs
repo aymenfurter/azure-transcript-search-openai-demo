@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.Service.CopilotChat.Skills.SortSkill
+namespace AzureVideoChat.Plugins.SortPlugin
 {
     public enum SortType
     {
@@ -28,8 +26,8 @@ namespace SemanticKernel.Service.CopilotChat.Skills.SortSkill
         public async Task<SortType> ProcessUserIntent(string userIntent)
         {
             var context = CreateContext(userIntent);
-            var skillsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TranscriptCopilot/Skills");
-            var skill = this._kernel.ImportSemanticSkillFromDirectory(skillsDirectory, "SortSkill");
+            var skillsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Plugins");
+            var skill = this._kernel.ImportSemanticSkillFromDirectory(skillsDirectory, "SortPlugin");
 
             var sortString = await this._kernel.RunAsync(skill["Sort"], context);
             return ParseSortType(sortString.ToString());

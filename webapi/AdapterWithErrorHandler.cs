@@ -8,7 +8,7 @@ using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Logging;
 
-namespace TeamsBot
+namespace AzureVideoChat.Bots
 {
     public class AdapterWithErrorHandler : CloudAdapter
     {

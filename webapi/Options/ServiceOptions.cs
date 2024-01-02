@@ -1,13 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.ComponentModel.DataAnnotations;
+namespace AzureVideoChat.Options;
 
-namespace SemanticKernel.Service.Options;
-
-/// <summary>
-/// Configuration options for the CopilotChat service.
-/// </summary>
 public class ServiceOptions
 {
     public const string PropertyName = "Service";

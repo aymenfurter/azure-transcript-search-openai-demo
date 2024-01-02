@@ -2,12 +2,15 @@ using System;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearchVector
+namespace AzureVideoChat.Connectors.Memory.AzureCognitiveSearchVector
 {
-    public class AzureSearchMemoryRecord
+    public class AISearchMemoryRecord
     {
         [SimpleField(IsKey = true, IsFilterable = false)]
         public string Id { get; set; } = string.Empty;
+
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.StandardLucene)]
+        public string? File { get; set; } = string.Empty;
 
         [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.StandardLucene)]
         public string? Text { get; set; } = string.Empty;

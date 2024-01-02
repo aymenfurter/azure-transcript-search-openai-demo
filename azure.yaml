@@ -1,4 +1,4 @@
-name: todo-java-mongo-aca
+name: azure-transcript-search-openai
 services:
   web:
     project: ./webui

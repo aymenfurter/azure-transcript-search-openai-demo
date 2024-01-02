@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using SemanticKernel.Service.Options;
+using AzureVideoChat.Options;
 
-namespace SemanticKernel.Service.CopilotChat.Options;
+namespace AzureVideoChat.Options;
 
 public class YouTubeMemoryOptions
 {
